@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f1117">
+<meta name="mobile-web-app-capable" content="yes">
+<title>英语语音练习 · 蓝牙版</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--card:#181c27;--card2:#1e2235;--border:#2a2f45;--accent:#4f8ef7;--green:#3ecf8e;--orange:#f5a623;--red:#f05252;--text:#e8eaf2;--text2:#8b90a8;--text3:#4a506a;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;overflow:hidden;-webkit-font-smoothing:antialiased;}
+#setup{position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;padding:40px 24px;display:flex;flex-direction:column;align-items:center;}
+.si{width:100%;max-width:400px;}
+.slogo{text-align:center;margin-bottom:28px;}
+.sicon{width:64px;height:64px;background:linear-gradient(135deg,#3ecf8e,#4f8ef7);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.8rem;box-shadow:0 8px 24px rgba(62,207,142,0.3);}
+.slogo h1{font-size:1.3rem;font-weight:500;margin-bottom:4px;}
+.slogo p{font-size:0.7rem;color:var(--text2);}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;}
+.slbl{font-size:0.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
+.fd{margin-bottom:10px;}.fd:last-child{margin-bottom:0;}
+.fd label{display:block;font-size:.68rem;color:var(--text2);margin-bottom:5px;}
+input,select{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Mono',monospace;font-size:.84rem;padding:11px 13px;outline:none;-webkit-appearance:none;appearance:none;transition:border-color .2s;}
+input:focus,select:focus{border-color:var(--accent);}
+.tc{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sbtn{width:100%;background:linear-gradient(135deg,#3ecf8e,#4f8ef7);color:white;border:none;border-radius:13px;font-family:'DM Mono',monospace;font-size:.88rem;font-weight:500;padding:15px;cursor:pointer;margin-top:4px;box-shadow:0 4px 18px rgba(62,207,142,0.3);}
+.sbtn:active{opacity:.85;}.sbtn:disabled{opacity:.4;}
+.err{background:rgba(240,82,82,.1);border:1px solid rgba(240,82,82,.3);border-radius:10px;padding:11px 13px;font-size:.76rem;color:var(--red);display:none;margin-top:10px;line-height:1.5;}
+.snote{font-size:.62rem;color:var(--text3);text-align:center;margin-top:14px;line-height:1.7;}
+#app{display:none;flex-direction:column;height:100%;}
+.ah{padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.ai{width:32px;height:32px;background:linear-gradient(135deg,#3ecf8e,#4f8ef7);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+.at{flex:1;}.at h2{font-size:.88rem;font-weight:500;}.at span{font-size:.6rem;color:var(--text2);}
+.hb{width:32px;height:32px;border-radius:9px;background:var(--card2);border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;}
+.tb{padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:7px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+.tb::-webkit-scrollbar{display:none;}
+.ch{flex-shrink:0;padding:5px 13px;border-radius:18px;font-size:.7rem;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:var(--card);white-space:nowrap;transition:all .15s;}
+.ch.active{background:rgba(62,207,142,.12);border-color:var(--green);color:var(--green);}
+#log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.es{margin:auto;text-align:center;padding:50px 20px;}
+.es .eg{font-size:3.5rem;opacity:.12;margin-bottom:16px;}
+.es p{font-size:.76rem;color:var(--text3);line-height:1.9;}
+.mg{animation:fu .25s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(6px);}to{opacity:1;}}
+.rl{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500;margin-bottom:6px;padding-left:2px;}
+.rl.you{color:var(--accent);}.rl.gpt{color:var(--green);}
+.bb{border-radius:13px;padding:12px 15px;font-size:.86rem;line-height:1.7;}
+.bb.you{background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.18);}
+.bb.gpt{background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.18);}
+.fbc{margin-top:7px;background:var(--card);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:11px;padding:12px 14px;font-size:.78rem;}
+.fbh{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);margin-bottom:9px;font-weight:500;}
+.fbi{margin-bottom:9px;padding-bottom:9px;border-bottom:1px solid var(--border);}
+.fbi:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.fbt{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:3px;}
+.fbw{color:var(--red);text-decoration:line-through;font-style:italic;}
+.fbr{color:var(--green);font-weight:500;margin-top:2px;}
+.fbb{color:var(--accent);font-weight:500;}
+.fbn{color:var(--text2);font-size:.72rem;margin-top:3px;line-height:1.5;}
+.rpb{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:16px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-family:'DM Mono',monospace;font-size:.68rem;cursor:pointer;margin-top:7px;}
+.thr{display:flex;align-items:center;gap:9px;font-size:.7rem;color:var(--text3);padding:6px 2px;}
+.ds span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin-right:3px;animation:db 1s infinite;opacity:.4;}
+.ds span:nth-child(2){animation-delay:.15s;}.ds span:nth-child(3){animation-delay:.3s;}
+@keyframes db{0%,100%{transform:translateY(0);opacity:.3;}50%{transform:translateY(-4px);opacity:1;}}
+#vbar{flex-shrink:0;background:var(--card);border-top:1px solid var(--border);padding:14px 24px 20px;}
+.vad-circle{width:88px;height:88px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:3px solid var(--border);background:var(--card2);transition:all .25s;cursor:pointer;}
+.vad-circle.listening{border-color:var(--green);background:rgba(62,207,142,.08);animation:pg 2s ease infinite;}
+.vad-circle.recording{border-color:var(--red);background:rgba(240,82,82,.1);animation:pr 0.8s ease infinite;}
+.vad-circle.processing{border-color:var(--accent);background:rgba(79,142,247,.08);}
+.vad-circle.speaking{border-color:var(--orange);background:rgba(245,166,35,.08);animation:po 1s ease infinite;}
+.vad-circle.paused{border-color:var(--border);background:var(--card2);opacity:0.6;}
+@keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(62,207,142,.4);}50%{box-shadow:0 0 0 12px rgba(62,207,142,0);}}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(240,82,82,.5);}50%{box-shadow:0 0 0 16px rgba(240,82,82,0);}}
+@keyframes po{0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,.4);}50%{box-shadow:0 0 0 10px rgba(245,166,35,0);}}
+.vs{text-align:center;font-size:.7rem;color:var(--text2);margin-bottom:10px;min-height:18px;font-weight:500;}
+.vs.rec{color:var(--red);}.vs.proc{color:var(--accent);}.vs.speak{color:var(--orange);}.vs.listen{color:var(--green);}
+.vol-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.vol-label{font-size:.62rem;color:var(--text3);white-space:nowrap;}
+.vol-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.vol-fill{height:100%;width:0%;background:var(--green);border-radius:2px;transition:width .06s;}
+.sens-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sens-row label{font-size:.62rem;color:var(--text3);white-space:nowrap;}
+.ctrl-row{display:flex;align-items:center;justify-content:center;gap:12px;}
+.ctrl-btn{padding:7px 16px;border-radius:18px;border:1px solid var(--border);background:var(--card2);color:var(--text2);font-family:'DM Mono',monospace;font-size:.7rem;cursor:pointer;transition:all .15s;}
+.ctrl-btn:active{opacity:.7;}
+#ss{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.55);display:none;align-items:flex-end;}
+#ss.open{display:flex;}
+.ssi{width:100%;background:var(--card);border-radius:18px 18px 0 0;padding:18px 22px 28px;border-top:1px solid var(--border);}
+.ssh{width:38px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.sst{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;}
+.sf{margin-bottom:12px;}
+.sf label{display:block;font-size:.66rem;color:var(--text2);margin-bottom:5px;}
+.sdn{width:100%;background:var(--green);color:white;border:none;border-radius:11px;padding:13px;font-family:'DM Mono',monospace;font-size:.84rem;cursor:pointer;margin-top:6px;}
+</style>
+</head>
+<body>
+
+<div id="setup">
+  <div class="si">
+    <div class="slogo">
+      <div class="sicon">🎧</div>
+      <h1>英语语音练习</h1>
+      <p>蓝牙免手机版 · Powered by ChatGPT</p>
+    </div>
+    <div class="sc">
+      <div class="slbl">OpenAI API Key</div>
+      <div class="fd"><input type="password" id="ak" placeholder="sk-..." autocomplete="off"/></div>
+      <div style="font-size:.65rem;color:var(--text3);line-height:1.7">Key仅存储本设备，不会上传任何服务器<br>获取：platform.openai.com/api-keys</div>
+    </div>
+    <div class="sc">
+      <div class="slbl">设置</div>
+      <div class="tc">
+        <div class="fd"><label>GPT 模型</label>
+          <select id="gm"><option value="gpt-5.4-nano" selected>GPT-5.4 nano ⭐</option><option value="gpt-5.4-mini">GPT-5.4 mini</option></select>
+        </div>
+        <div class="fd"><label>AI 声音</label>
+          <select id="tv"><option value="nova">Nova 女声</option><option value="shimmer">Shimmer 柔和</option><option value="alloy">Alloy 中性</option><option value="echo">Echo 男声</option><option value="fable">Fable 英式</option><option value="onyx">Onyx 低沉</option></select>
+        </div>
+      </div>
+      <div class="fd"><label>英语水平</label>
+        <select id="ml"><option value="beginner">初学者 (A1-A2)</option><option value="elementary">基础 (B1)</option><option value="intermediate" selected>中级 (B2)</option><option value="advanced">高级 (C1-C2)</option></select>
+      </div>
+    </div>
+    <div id="er" class="err"></div>
+    <button class="sbtn" id="stb" onclick="startApp()">开始练习 →</button>
+    <div class="snote">🎧 戴上蓝牙耳机后点击「开始练习」<br>说话自动检测录音，无需触摸屏幕<br>Chrome浏览器 → 菜单 → 添加到主屏幕</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="ah">
+    <div class="ai">🎧</div>
+    <div class="at"><h2>英语语音练习</h2><span id="mt">gpt-5.4-nano · nova · 1x</span></div>
+    <div style="display:flex;gap:7px">
+      <button class="hb" onclick="clearChat()">🗑</button>
+      <button class="hb" onclick="openSettings()">⚙️</button>
+    </div>
+  </div>
+  <div class="tb">
+    <button class="ch active" data-topic="free"      onclick="setTopic(this)">💬 自由聊天</button>
+    <button class="ch"        data-topic="daily"     onclick="setTopic(this)">☀️ 日常生活</button>
+    <button class="ch"        data-topic="work"      onclick="setTopic(this)">💼 职场英语</button>
+    <button class="ch"        data-topic="travel"    onclick="setTopic(this)">✈️ 旅行</button>
+    <button class="ch"        data-topic="interview" onclick="setTopic(this)">🎯 面试练习</button>
+    <button class="ch"        data-topic="debate"    onclick="setTopic(this)">🗣 辩论观点</button>
+  </div>
+  <div id="log">
+    <div class="es" id="empty">
+      <div class="eg">🎧</div>
+      <p>戴好蓝牙耳机<br>点击下方圆圈开始监听<br>说话会自动录音并发送</p>
+    </div>
+  </div>
+  <div id="vbar">
+    <div class="vs" id="vs">点击圆圈开始自动监听</div>
+    <div id="wakelock-status" style="text-align:center;font-size:.58rem;color:var(--text3);margin-bottom:6px;min-height:14px"></div>
+    <div class="vad-circle paused" id="vad-circle" onclick="toggleVAD()">
+      <span id="vad-icon">▶</span>
+    </div>
+    <div class="vol-row">
+      <span class="vol-label">音量</span>
+      <div class="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
+      <span class="vol-label" id="vol-db">-∞</span>
+    </div>
+    <div class="sens-row">
+      <label>灵敏度</label>
+      <input type="range" id="sensitivity" min="1" max="10" value="5" style="flex:1;accent-color:var(--green)" oninput="updateSens(this.value)">
+      <span id="sens-val" style="font-size:.62rem;color:var(--text3);width:16px">5</span>
+    </div>
+    <div class="ctrl-row">
+      <button class="ctrl-btn" onclick="clearChat()">🗑 清空对话</button>
+      <button class="ctrl-btn" onclick="openSettings()">⚙️ 设置</button>
+    </div>
+  </div>
+</div>
+
+<div id="ss" onclick="if(event.target===this)closeSettings()">
+  <div class="ssi">
+    <div class="ssh"></div>
+    <div class="sst">设置</div>
+    <div class="sf"><label>GPT 模型</label>
+      <select id="sm" onchange="save('model',this.value)"><option value="gpt-5.4-nano">GPT-5.4 nano ⭐</option><option value="gpt-5.4-mini">GPT-5.4 mini</option></select>
+    </div>
+    <div class="sf"><label>AI 声音</label>
+      <select id="sv" onchange="save('voice',this.value)"><option value="nova">Nova 女声</option><option value="shimmer">Shimmer 柔和</option><option value="alloy">Alloy 中性</option><option value="echo">Echo 男声</option><option value="fable">Fable 英式</option><option value="onyx">Onyx 低沉</option></select>
+    </div>
+    <div class="sf">
+      <label>AI 语速 &nbsp;<span id="spv" style="color:var(--green)">1.0x</span></label>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+        <span style="font-size:.66rem;color:var(--text3)">1.0</span>
+        <input type="range" id="ssp" min="1.0" max="2.0" step="0.1" value="1.0" style="flex:1;accent-color:var(--green)" oninput="document.getElementById('spv').textContent=parseFloat(this.value).toFixed(1)+'x'" onchange="save('speed',this.value)">
+        <span style="font-size:.66rem;color:var(--text3)">2.0</span>
+      </div>
+    </div>
+    <div class="sf"><label>英语水平</label>
+      <select id="sl" onchange="save('level',this.value)"><option value="beginner">初学者 (A1-A2)</option><option value="elementary">基础 (B1)</option><option value="intermediate">中级 (B2)</option><option value="advanced">高级 (C1-C2)</option></select>
+    </div>
+    <button class="sdn" onclick="closeSettings()">完成</button>
+  </div>
+</div>
+
+<script>
+let apiKey='',gptModel='gpt-5.4-nano',ttsVoice='nova',ttsSpeed=1.0,userLevel='intermediate',topic='free';
+let wakeLock=null;
+let isListening=false,isRecording=false,isProcessing=false;
+let history=[],audioCtx=null,analyser=null,micStream=null,micSource=null;
+let recProcessor=null,pcmChunks=[],silenceTimer=null,rafId=null;
+let sensitivity=5,recStartTime=0;
+const SILENCE_MS=1500,MIN_REC_MS=600;
+const TOPICS={free:'any topic the user brings up',daily:'daily life: routines, food, hobbies, family',work:'professional topics: jobs, career, workplace',travel:'travel, tourism, destinations',interview:'job interview — act as the interviewer',debate:'opinions and debate — encourage the user to share views'};
+const LEVELS={beginner:'Use very simple vocabulary, short sentences (A1-A2). Avoid idioms.',elementary:'Use simple to moderate vocabulary (B1).',intermediate:'Use natural B2-level English with idioms and varied grammar.',advanced:'Use sophisticated C1+ English freely.'};
+
+function getThresholdDB(){ return -30+(sensitivity-1)*(15/9); }
+
+async function startApp(){
+  const key=document.getElementById('ak').value.trim();
+  if(!key.startsWith('sk-')){showErr('请输入有效的 OpenAI API Key（sk- 开头）');return;}
+  apiKey=key; gptModel=document.getElementById('gm').value;
+  ttsVoice=document.getElementById('tv').value; userLevel=document.getElementById('ml').value;
+  const btn=document.getElementById('stb'); btn.disabled=true; btn.textContent='连接中...';
+  try{
+    const r=await fetch('https://api.openai.com/v1/models',{headers:{'Authorization':`Bearer ${apiKey}`}});
+    if(!r.ok) throw new Error('API Key 无效');
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    localStorage.setItem('ev_k',apiKey);localStorage.setItem('ev_m',gptModel);
+    localStorage.setItem('ev_v',ttsVoice);localStorage.setItem('ev_l',userLevel);localStorage.setItem('ev_s',String(ttsSpeed));
+    document.getElementById('setup').style.display='none';
+    document.getElementById('app').style.display='flex';
+    updateTag(); initAnalyser();
+  }catch(e){
+    showErr(e.message.includes('getUserMedia')?'麦克风权限被拒绝，请允许Chrome使用麦克风':e.message);
+    btn.disabled=false; btn.textContent='开始练习 →';
+  }
+}
+function showErr(m){const e=document.getElementById('er');e.textContent=m;e.style.display='block';}
+
+async function requestWakeLock() {
+  const el = document.getElementById('wakelock-status');
+  if (!('wakeLock' in navigator)) {
+    if(el) el.textContent = '⚠️ 此浏览器不支持屏幕常亮';
+    return;
+  }
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    if(el) el.textContent = '💡 屏幕常亮已开启';
+    wakeLock.addEventListener('release', () => {
+      if(el) el.textContent = '';
+      wakeLock = null;
+      if(isListening) requestWakeLock();
+    });
+  } catch(e) {
+    if(el) el.textContent = '⚠️ 屏幕常亮请求失败';
+  }
+}
+
+function initAnalyser(){
+  micSource=audioCtx.createMediaStreamSource(micStream);
+  analyser=audioCtx.createAnalyser();
+  analyser.fftSize=2048; analyser.smoothingTimeConstant=0.3;
+  micSource.connect(analyser);
+  startVolumeMeter();
+}
+
+function startVolumeMeter(){
+  const data=new Float32Array(analyser.fftSize);
+  function tick(){
+    rafId=requestAnimationFrame(tick);
+    analyser.getFloatTimeDomainData(data);
+    let sum=0; for(let i=0;i<data.length;i++) sum+=data[i]*data[i];
+    const rms=Math.sqrt(sum/data.length);
+    const db=rms>0?20*Math.log10(rms):-100;
+    const pct=Math.max(0,Math.min(100,(db+60)/60*100));
+    document.getElementById('vol-fill').style.width=pct+'%';
+    document.getElementById('vol-db').textContent=db>-60?Math.round(db)+'dB':'-∞';
+    if(!isListening||isProcessing) return;
+    const thr=getThresholdDB();
+    if(!isRecording&&db>thr){
+      startRecording();
+    } else if(isRecording&&db<thr){
+      if(!silenceTimer) silenceTimer=setTimeout(()=>{silenceTimer=null;if(isRecording)stopRecording();},SILENCE_MS);
+    } else if(isRecording&&db>thr){
+      if(silenceTimer){clearTimeout(silenceTimer);silenceTimer=null;}
+    }
+  }
+  tick();
+}
+
+function toggleVAD(){
+  if(isListening){pauseVAD();}else{resumeVAD();}
+}
+function resumeVAD(){
+  if(isProcessing) return;
+  isListening=true; setCircle('listening');
+  setSt('listen','👂 监听中... 开始说话即自动录音');
+  requestWakeLock(); // Keep screen on while listening
+}
+function pauseVAD(){
+  isListening=false;
+  if(isRecording){clearTimeout(silenceTimer);silenceTimer=null;stopRecording();}
+  setCircle('paused'); setSt('','已暂停 — 点击圆圈恢复监听');
+  // Release wake lock when paused to save battery
+  if(wakeLock) { wakeLock.release(); wakeLock = null; }
+}
+function setCircle(state){
+  const c=document.getElementById('vad-circle');
+  const i=document.getElementById('vad-icon');
+  c.className='vad-circle '+state;
+  i.textContent={listening:'👂',recording:'🔴',processing:'⏳',speaking:'🔊',paused:'▶'}[state]||'▶';
+}
+
+function startRecording(){
+  if(isRecording||isProcessing) return;
+  isRecording=true; recStartTime=Date.now(); pcmChunks=[];
+  recProcessor=audioCtx.createScriptProcessor(4096,1,1);
+  recProcessor.onaudioprocess=ev=>{
+    if(!isRecording) return;
+    pcmChunks.push(new Float32Array(ev.inputBuffer.getChannelData(0)));
+  };
+  micSource.connect(recProcessor);
+  recProcessor.connect(audioCtx.destination);
+  setCircle('recording'); setSt('rec','🔴 录音中...');
+}
+
+async function stopRecording(){
+  if(!isRecording) return;
+  isRecording=false;
+  const elapsed=Date.now()-recStartTime;
+  if(recProcessor){recProcessor.disconnect();recProcessor=null;}
+  if(elapsed<MIN_REC_MS||pcmChunks.length<3){
+    pcmChunks=[]; resetVAD(); return;
+  }
+  isProcessing=true; setCircle('processing'); setSt('proc','◌ 识别语音...');
+  try{
+    const wav=pcmToWav(pcmChunks,audioCtx.sampleRate); pcmChunks=[];
+    await transcribeAndReply(wav);
+  }catch(e){setSt('','错误: '+e.message);resetVAD();}
+}
+
+function resetVAD(){
+  isProcessing=false; isRecording=false;
+  if(silenceTimer){clearTimeout(silenceTimer);silenceTimer=null;}
+  if(isListening){setCircle('listening');setSt('listen','👂 监听中... 开始说话即自动录音');}
+  else{setCircle('paused');setSt('','已暂停 — 点击圆圈恢复监听');}
+}
+
+async function transcribeAndReply(wavBlob){
+  try{
+    const fd=new FormData();
+    fd.append('file',wavBlob,'audio.wav');
+    fd.append('model','whisper-1');
+    fd.append('language','en');
+    const r=await fetch('https://api.openai.com/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':`Bearer ${apiKey}`},body:fd});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'Whisper error');}
+    const{text}=await r.json();
+    if(!text?.trim()){resetVAD();return;}
+    await sendToGPT(text.trim());
+  }catch(e){setSt('','识别错误: '+e.message);resetVAD();}
+}
+
+async function sendToGPT(userText){
+  setSt('proc','◌ GPT 思考中...'); removeEmpty();
+  const userEl=addBubble('you',userText);
+  const thinking=addThinking();
+  history.push({role:'user',content:userText});
+  if(history.length>20) history=history.slice(-20);
+  if(history.length>20) history=history.slice(-20);
+  try{
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+      body:JSON.stringify({model:gptModel,messages:[{role:'system',content:buildPrompt()},...history],max_completion_tokens:800,temperature:0.75,response_format:{type:'json_object'}})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error?.message||'GPT error');
+    let p; try{p=JSON.parse(data.choices[0].message.content);}catch{p={reply:data.choices[0].message.content,corrections:[],better_expressions:[]};}
+    history.push({role:'assistant',content:p.reply});
+    thinking.remove();
+    if(p.corrections?.length||p.better_expressions?.length) addFeedback(userEl,p.corrections||[],p.better_expressions||[]);
+    const replyEl=addBubble('gpt',p.reply);
+    setSt('proc','◌ 生成语音...');
+    const ad=await fetchTTS(p.reply);
+    if(ad){addReplayBtn(replyEl,ad);await playAudio(ad);}
+    else resetVAD();
+  }catch(e){thinking.remove();addBubble('gpt','⚠️ 错误: '+e.message);resetVAD();}
+}
+
+function buildPrompt(){
+  return `You are a friendly English conversation coach. Two jobs:
+1. Have a natural conversation about: ${TOPICS[topic]}
+2. Analyze the user's English and provide feedback.
+Match language to level: ${LEVELS[userLevel]}
+Respond ONLY in valid JSON (no markdown):
+{"reply":"2-3 sentence response. Warm, engaging, end with follow-up question.","corrections":[{"original":"exact wrong phrase","fixed":"corrected","explanation":"brief reason"}],"better_expressions":[{"original":"correct but weak phrase","better":"more natural version","note":"why"}]}
+corrections=actual errors only, if none use []. better_expressions=max 1-2, if none use [].`;
+}
+
+async function fetchTTS(text){
+  try{
+    const r=await fetch('https://api.openai.com/v1/audio/speech',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify({model:'tts-1',voice:ttsVoice,input:text,speed:ttsSpeed})});
+    if(!r.ok) throw new Error();
+    return{buf:await r.arrayBuffer(),text};
+  }catch{return null;}
+}
+
+async function playAudio(ad){
+  if(!ad?.buf||!audioCtx){resetVAD();return;}
+  try{
+    setCircle('speaking'); setSt('speak','🔊 AI 正在说话...');
+    const buf=await audioCtx.decodeAudioData(ad.buf.slice(0));
+    const src=audioCtx.createBufferSource();
+    src.buffer=buf; src.connect(audioCtx.destination); src.start(0);
+    await new Promise(r=>{src.onended=r;});
+    resetVAD();
+  }catch{resetVAD();}
+}
+
+function pcmToWav(chunks,sr){
+  const len=chunks.reduce((s,c)=>s+c.length,0);
+  const buf=new ArrayBuffer(44+len*2); const v=new DataView(buf);
+  const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  w(0,'RIFF');v.setUint32(4,36+len*2,true);w(8,'WAVE');w(12,'fmt ');
+  v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);
+  w(36,'data');v.setUint32(40,len*2,true);
+  let off=44;
+  for(const c of chunks)for(let i=0;i<c.length;i++){const s=Math.max(-1,Math.min(1,c[i]));v.setInt16(off,s<0?s*0x8000:s*0x7FFF,true);off+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+
+function addBubble(role,text){
+  const log=document.getElementById('log');
+  const el=document.createElement('div');el.className='mg';
+  el.innerHTML=`<div class="rl ${role}">${role==='you'?'你说':'GPT 回复'}</div><div class="bb ${role}">${esc(text)}</div>`;
+  log.appendChild(el);scrollLog();return el;
+}
+function addFeedback(e,corrections,betterExps){
+  let h=`<div class="fbc"><div class="fbh">📝 语法反馈</div>`;
+  corrections.forEach(c=>{h+=`<div class="fbi"><div class="fbt">❌ 错误纠正</div><div class="fbw">${esc(c.original)}</div><div class="fbr">✓ ${esc(c.fixed)}</div><div class="fbn">${esc(c.explanation)}</div></div>`;});
+  betterExps.forEach(b=>{h+=`<div class="fbi"><div class="fbt">💡 更地道</div><div style="color:var(--text2)">"${esc(b.original)}"</div><div class="fbb">→ "${esc(b.better)}"</div><div class="fbn">${esc(b.note)}</div></div>`;});
+  h+=`</div>`;e.insertAdjacentHTML('beforeend',h);scrollLog();
+}
+function addReplayBtn(el,ad){
+  const btn=document.createElement('button');btn.className='rpb';btn.textContent='↩ 重播';
+  btn.onclick=()=>playAudio(ad);el.appendChild(btn);
+}
+function addThinking(){
+  const log=document.getElementById('log');
+  const el=document.createElement('div');el.className='thr';
+  el.innerHTML=`<div class="ds"><span></span><span></span><span></span></div><span>GPT 思考中...</span>`;
+  log.appendChild(el);scrollLog();return el;
+}
+function removeEmpty(){document.getElementById('empty')?.remove();}
+function scrollLog(){const l=document.getElementById('log');setTimeout(()=>{l.scrollTop=l.scrollHeight;},50);}
+function setSt(type,msg){const e=document.getElementById('vs');e.textContent=msg;e.className='vs'+(type?' '+type:'');}
+function updateTag(){document.getElementById('mt').textContent=`${gptModel} · ${ttsVoice} · ${ttsSpeed}x`;}
+function updateSens(v){sensitivity=parseInt(v);document.getElementById('sens-val').textContent=v;}
+function setTopic(btn){document.querySelectorAll('.ch').forEach(c=>c.classList.remove('active'));btn.classList.add('active');topic=btn.dataset.topic;clearChat();}
+function clearChat(){history=[];document.getElementById('log').innerHTML='<div class="es" id="empty"><div class="eg">🎧</div><p>戴好蓝牙耳机<br>点击下方圆圈开始监听<br>说话会自动录音并发送</p></div>';}
+function save(type,val){
+  if(type==='model'){gptModel=val;localStorage.setItem('ev_m',val);}
+  if(type==='voice'){ttsVoice=val;localStorage.setItem('ev_v',val);}
+  if(type==='speed'){ttsSpeed=parseFloat(val);localStorage.setItem('ev_s',val);}
+  if(type==='level'){userLevel=val;localStorage.setItem('ev_l',val);}
+  updateTag();
+}
+function openSettings(){
+  document.getElementById('sm').value=gptModel;document.getElementById('sv').value=ttsVoice;
+  document.getElementById('ssp').value=ttsSpeed;document.getElementById('spv').textContent=ttsSpeed.toFixed(1)+'x';
+  document.getElementById('sl').value=userLevel;document.getElementById('ss').classList.add('open');
+}
+function closeSettings(){document.getElementById('ss').classList.remove('open');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+(function(){
+  const k=localStorage.getItem('ev_k'),m=localStorage.getItem('ev_m'),
+        v=localStorage.getItem('ev_v'),s=localStorage.getItem('ev_s'),l=localStorage.getItem('ev_l');
+  if(k)document.getElementById('ak').value=k;
+  if(m){gptModel=m;document.getElementById('gm').value=m;}
+  if(v){ttsVoice=v;document.getElementById('tv').value=v;}
+  if(s)ttsSpeed=parseFloat(s);
+  if(l){userLevel=l;document.getElementById('ml').value=l;}
+})();
+document.getElementById('ak').addEventListener('keydown',e=>{if(e.key==='Enter')startApp();});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible') {
+    if(audioCtx?.state==='suspended') audioCtx.resume().catch(()=>{});
+    if(isListening && !wakeLock) requestWakeLock();
+  }
+});
+</script>
+</body>
+</html>
